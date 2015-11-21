@@ -34,52 +34,54 @@ router.post("/upload",function(req,res){
  req.pipe(req.busboy);
 
  console.log("POST is Running");
- 
+
 
  req.busboy.on('file',function(fieldname,file,filename){
-   
+
    _filename = filename;
    var ext = getExt(filename);
-   if(ext !== "" && ext === ".mp4"){	
+   if(ext !== "" && ext === ".mp4"){
    console.log("Uploading ... " + filename);
    fstream = fs.createWriteStream("uploads/"+filename);
    file.pipe(fstream);
    fstream.on('close',function(){
 	// convert video stream
 
-	var gifFile = shortid.generate() + "myFaceWhen.gif"; 
+	var gifFile = shortid.generate() + "myFaceWhen.gif";
 
 	gify("uploads/"+filename,"uploads/"+gifFile,{width:300},function(err){
-	
+
 	if(err) throw err;
-         var cmd_terminal = "convert /root/myFaceWhen/uploads/"+gifFile +" -rotate -90 " + "/root/myFaceWhen/uploads/rotated_" +gifFile;
-child = exec(cmd_terminal,
-  function (error, stdout, stderr) {
-    if (error !== null) {
+
+  var cmd_terminal = "convert /root/myFaceWhen/uploads/"+gifFile
+   +" -rotate -90 " + "/root/myFaceWhen/uploads/rotated_" +gifFile;
+
+     child = exec(cmd_terminal,
+     function (error, stdout, stderr) {
+     if (error !== null) {
       console.log('erreur ' + error);
-    }
-    else{
+     }
+     else{
         console.log('stdout : ---- ' + stdout);
         console.log('stderr : --- ' + stderr);
-        }
-});
+     }});
 
 
 	 //fs.unlinkSync("uploads/" + filename);
 	// to remove the first gif
 	// fs.unlinkSync("uploads/" + gifFile);
-	
+
 	});
-	
+
 	fs.unlinkSync("uploads/"+ filename);
-	res.json({message:"File converted successfully",gif:"/gifs/"+gifFile,url:"/gifs/rotated_"+gifFile});	
+	res.json({message:"File converted successfully",gif:"/gifs/"+gifFile,url:"/gifs/rotated_"+gifFile});
 
    });
   }
   else{
    res.json({error:"Please upload an MP4 file"});
   }
- 
+
 
   //fin reqonfile
   });
@@ -94,6 +96,6 @@ child = exec(cmd_terminal,
 app.use('/gifs',express.static("uploads"));
 app.use("/api",router);
 
-// start the server 
+// start the server
 app.listen(port);
 console.log("Magic happens ...");
